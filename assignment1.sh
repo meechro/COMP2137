@@ -1,9 +1,12 @@
 #!/bin/bash
 #The purpose of this script is to run a system report to get important information about your hardware.
 #This script contains inxi commands which may not be installed on all devices.
+#Gathering user info
 myhostname=$(hostname)
 mydate=$(date)
 username=$(whoami)
+
+#Gathering System Info
 ram=$(inxi -m | awk '/System RAM: /{print $4,$5}')
 os=$(inxi -S | awk '/Distro: /{print $6,$7,$8}')
 up=$(uptime -p)
@@ -13,6 +16,8 @@ gpu=$(inxi -G | awk -F 'Device-1: ' '/Device-1:/ {print $2}' | cut -d ' ' -f1-4)
 ip=$(hostname -I | awk '{print $1}')
 gateway=$(ip r s default | awk '{print $3}')
 dns=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
+
+#Gathering System Status Info
 users=$(who | grep seat0 | awk '{print $1}')
 diskspace=$(df -h | grep '/dev/sda2' | awk '{print $1, $2}')
 #use -e to show all processes running without headers
