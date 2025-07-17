@@ -52,7 +52,7 @@ if dpkg -l | grep -q apache2; then
   echo "Apache2 is installed on your machine."
 else
   echo "Installing Apache2..."
-  apt-get update && apt-get install -y apache2
+  apt-get update -qq > /dev/null && apt-get install -qq apache2 > /dev/null
   echo "Apache2 is now installed"
 fi
 
@@ -62,7 +62,7 @@ if dpkg -l | grep -q squid; then
   echo "Squid is installed on your machine."
 else
   echo "Installing Squid..."
-  apt-get update && apt-get install -y squid
+  apt-get update -qq > /dev/null && apt-get install -qq > /dev/null squid
   echo "Squid is now installed"
   
 fi
@@ -97,12 +97,12 @@ for user in "${users[@]}"; do
   # ASK FOR HELP ON THIS PART!!!!
   # generate RSA key if not there
   if [ ! -f /home/"$user"/.ssh/id_rsa ]; then
-    ssh-keygen -t rsa -b 2048 -f /home/"$user"/.ssh/id_rsa -N ""
+    ssh-keygen -q -t rsa -b 2048 -f /home/"$user"/.ssh/id_rsa -N "" 
   fi
 
   # generate ED25519 key if not there
   if [ ! -f /home/"$user"/.ssh/id_ed25519 ]; then
-    ssh-keygen -t ed25519 -f /home/"$user"/.ssh/id_ed25519 -N ""
+    ssh-keygen -q -t ed25519 -f /home/"$user"/.ssh/id_ed25519 -N ""
   fi
   
   # Ensure authorized_keys file exists
@@ -119,6 +119,7 @@ for user in "${users[@]}"; do
  # ASK FOR HELP ON THIS!!!!!!!!
  
   # add extra key and sudo for user dennis
+  #check if the key is there first
   if [ "$user" == "dennis" ]; then
     echo "Adding instructor SSH key for dennis..."
     echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG4rT3vTt99Ox5kndS4HmgTrKBT8SKzhK4rhGkEVGlCI" >> /home/dennis/.ssh/authorized_keys
