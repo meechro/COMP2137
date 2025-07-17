@@ -23,6 +23,8 @@ findip_clean=$(echo "$findip" | cut -d'/' -f1)
 
 lineforhost="$correct_ip $hostname"
 
+#Check if ip is in netplan file and add & apply netplan
+
 if grep -q "$newip" "$netplan"; then
   echo "Updated IP is already configured in Netplan"
 else
@@ -39,7 +41,7 @@ if grep -q "$lineforhost" "$host_file"; then
 else
   
   # Remove any existing line with the hostname before adding new one
-  sed -i "/ $hostname/d" "$host_file"
+  sed -i /\ $hostname\$/d "$host_file"
   
     # Append the new line
     echo "$lineforhost" >> "$host_file"
@@ -93,8 +95,6 @@ for user in "${users[@]}"; do
   mkdir -p /home/"$user"/.ssh
   chmod 700 /home/"$user"/.ssh
   
-  # ASK FOR HELP ON THIS PART!!!!
-  # ASK FOR HELP ON THIS PART!!!!
   # generate RSA key if not there
   if [ ! -f /home/"$user"/.ssh/id_rsa ]; then
     ssh-keygen -q -t rsa -b 2048 -f /home/"$user"/.ssh/id_rsa -N "" 
@@ -116,15 +116,22 @@ for user in "${users[@]}"; do
   grep -q -F "$(cat /home/"$user"/.ssh/id_ed25519.pub)" /home/"$user"/.ssh/authorized_keys || \
   cat /home/"$user"/.ssh/id_ed25519.pub >> /home/"$user"/.ssh/authorized_keys
 
- # ASK FOR HELP ON THIS!!!!!!!!
  
-  # add extra key and sudo for user dennis
-  #check if the key is there first
+  # check if key is there and if not add extra key and sudo for user dennis
   if [ "$user" == "dennis" ]; then
-    echo "Adding instructor SSH key for dennis..."
-    echo "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG4rT3vTt99Ox5kndS4HmgTrKBT8SKzhK4rhGkEVGlCI" >> /home/dennis/.ssh/authorized_keys
-    usermod -aG sudo dennis
-  fi  
+    echo "Checking for instructor SSH Key"
+    extra_key="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIG4rT3vTt99Ox5kndS4HmgTrKBT8SKzhK4rhGkEVGlCI"
+    authorized_keys_file="/home/dennis/.ssh/authorized_keys"
+    
+    if ! grep -q "$extra_key" "$authorized_keys_file"; then
+      echo "$extra_key" >> "$authorized_keys_file"
+      echo "Instructor SSH key added for user Dennis."
+    else
+      echo "instructor key for dennis is already added."
+    fi 
+  
+  usermod -aG sudo dennis
+fi
   
     # Set permissions and ownership
   chmod 600 /home/"$user"/.ssh/authorized_keys
